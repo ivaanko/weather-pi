@@ -865,7 +865,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "grafanacloud-ivanko-prom"
+        "uid": "grafanacloud-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -907,7 +907,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -941,10 +942,16 @@
       "pluginVersion": "8.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "node_thermal_zone_temp",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -996,7 +1003,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1036,9 +1044,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{host=\"pi\",mode=\"idle\"}[2m])) * 100)",
+          "expr": "100 - (avg by (host) (irate(node_cpu_seconds_total{host=\"pi\",mode=\"idle\"}[2m])) * 100)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
@@ -1091,7 +1099,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1133,7 +1142,7 @@
           "exemplar": true,
           "expr": "node_memory_MemFree_bytes{host=\"pi\"}",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
@@ -1186,7 +1195,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1282,7 +1292,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1346,6 +1357,6 @@
   "timezone": "",
   "title": "Pi",
   "uid": "9-GDT_jGk",
-  "version": 25,
+  "version": 27,
   "weekStart": ""
 }
