@@ -19,3 +19,4 @@ Spin up: `./runme.sh`
 Strip down: `./runme.sh down -v` and edit crontab if you want to stop OpenWeatherMap queries too.
 
 Feel free to import [Grafana dashboard](dashboard.json) to your Grafana instance.
+![image](https://github.com/ivaanko/weather-pi/assets/1969105/5a767a04-f28d-41de-b188-2bf68a7dc9f8)
