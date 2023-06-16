@@ -1,1 +1,1 @@
-*/5 * * * * $HOME/weather/weather.sh > $HOME/weather.log 2>&1
+*/5 * * * * $HOME/weather-pi/weather.sh > $HOME/weather.log 2>&1
