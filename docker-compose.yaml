@@ -1,0 +1,52 @@
+version: '2'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./grafana-cloud-key.txt:/grafana-cloud/key
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention=1h'
+    network_mode: "host"
+
+  pushgateway:
+    image: prom/pushgateway
+    restart: unless-stopped 
+    network_mode: "host"
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter
+    command:
+      - '--path.rootfs=/host'
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+    pid: "host"
+    network_mode: "host"
+
+  promtail:
+    image: grafana/promtail
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - ./promtail.yaml:/etc/promtail/config.yaml
+      - ./grafana-cloud-key.txt:/grafana-cloud/key
+    command: -config.file=/etc/promtail/config.yaml
+    network_mode: "host"
+
+  dht22-exporter:
+    image: sfudeus/dht22-exporter
+    restart: unless-stopped
+    network_mode: "host"
+    privileged: true
+
+volumes:
+  prometheus-data:
+
