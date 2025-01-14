@@ -12,7 +12,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
       - '--web.enable-lifecycle'
-      - '--storage.tsdb.retention=1h'
+      - '--storage.tsdb.retention.time=1h'
     network_mode: "host"
 
   pushgateway:
