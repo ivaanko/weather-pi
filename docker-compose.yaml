@@ -1,18 +1,25 @@
 version: '2'
 
 services:
-  prometheus:
-    image: prom/prometheus
-    privileged: true
+  alloy:
+    image: grafana/alloy:latest
+    user: "0:0"
     restart: unless-stopped
     volumes:
-      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
-      - ./grafana-cloud-key.txt:/grafana-cloud/key
-      - prometheus-data:/prometheus
+      - ./alloy.alloy:/etc/alloy/config.alloy:ro
+      - ./grafana-cloud-key.txt:/grafana-cloud/key:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - alloy-data:/var/lib/alloy/data
+    environment:
+      MIMIR_URL: ${MIMIR_URL}
+      MIMIR_USER: ${MIMIR_USER}
+      LOKI_URL: ${LOKI_URL}
+      LOKI_USER: ${LOKI_USER}
     command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
-      - '--web.enable-lifecycle'
-      - '--storage.tsdb.retention.time=1h'
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
     network_mode: "host"
 
   pushgateway:
@@ -30,17 +37,6 @@ services:
     pid: "host"
     network_mode: "host"
 
-  promtail:
-    image: grafana/promtail
-    restart: unless-stopped
-    volumes:
-      - /var/log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers
-      - ./promtail.yaml:/etc/promtail/config.yaml
-      - ./grafana-cloud-key.txt:/grafana-cloud/key
-    command: -config.file=/etc/promtail/config.yaml
-    network_mode: "host"
-
   dht22-exporter:
     image: sfudeus/dht22-exporter
     restart: unless-stopped
@@ -48,5 +44,5 @@ services:
     privileged: true
 
 volumes:
-  prometheus-data:
+  alloy-data:
 
