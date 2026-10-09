@@ -2,7 +2,7 @@ version: '2'
 
 services:
   alloy:
-    image: grafana/alloy:latest
+    image: "${ALLOY_IMAGE:-grafana/alloy:latest}"
     user: "0:0"
     restart: unless-stopped
     volumes:
