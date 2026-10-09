@@ -1,0 +1,77 @@
+minimum_pre_commit_version: "3.2.0"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        args: [--strict, --format, parsable, -d, relaxed]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning, -x]
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.8.0-1
+    hooks:
+      - id: shfmt
+        args: [-i, "2"]
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
+  - repo: local
+    hooks:
+      - id: compose-config
+        name: Validate rendered Compose configuration
+        entry: bash tests/check-compose-config.sh
+        language: system
+        files: ^docker-compose\.yaml$
+        pass_filenames: false
+
+      - id: alloy-config
+        name: Format and validate Alloy configuration
+        entry: bash tests/check-alloy-config.sh
+        language: system
+        files: ^alloy\.alloy$
+        pass_filenames: false
+
+      - id: armv7-dockerfile-check
+        name: Check ARMv7 Dockerfile with BuildKit
+        entry: >-
+          docker buildx build --check --platform linux/arm/v7
+          --file Dockerfile.alloy-armv7 .
+        language: system
+        files: ^Dockerfile\.alloy-armv7$
+        pass_filenames: false
+
+      - id: platform-manifests
+        name: Check published image platforms
+        entry: bash tests/check-alloy-platform.sh
+        language: system
+        stages: [manual]
+        pass_filenames: false

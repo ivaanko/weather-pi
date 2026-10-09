@@ -25,22 +25,22 @@ if ! grep -Fq 'CGO_ENABLED=0 GO_TAGS=' Dockerfile.alloy-armv7 || ! grep -Fq 'GOA
 fi
 
 build_images=$(sed -nE 's/^FROM([[:space:]]+--platform=\$BUILDPLATFORM)?[[:space:]]+([^[:space:]]+:[^[:space:]]+).*/\2/p' Dockerfile.alloy-armv7 | sort -u)
-if [[ -z "$build_images" ]]; then
+if [[ -z $build_images ]]; then
   printf 'FAIL: no build image references found in Dockerfile.alloy-armv7\n' >&2
   exit 1
 fi
 
 while IFS= read -r image; do
   manifest=$(docker manifest inspect --verbose "$image")
-  if ! jq -e 'any(.[]; .Descriptor.platform.os == "linux" and .Descriptor.platform.architecture == "arm" and .Descriptor.platform.variant == "v7")' <<< "$manifest" >/dev/null; then
+  if ! jq -e 'any(.[]; .Descriptor.platform.os == "linux" and .Descriptor.platform.architecture == "arm" and .Descriptor.platform.variant == "v7")' <<<"$manifest" >/dev/null; then
     printf 'FAIL: build base %s does not publish linux/arm/v7\n' "$image" >&2
     exit 1
   fi
   printf 'PASS: %s publishes linux/arm/v7\n' "$image"
-done <<< "$build_images"
+done <<<"$build_images"
 
 manifest=$(docker manifest inspect --verbose grafana/alloy:latest)
-if ! jq -e 'any(.[]; .Descriptor.platform.os == "linux" and .Descriptor.platform.architecture == "arm64")' <<< "$manifest" >/dev/null; then
+if ! jq -e 'any(.[]; .Descriptor.platform.os == "linux" and .Descriptor.platform.architecture == "arm64")' <<<"$manifest" >/dev/null; then
   printf 'FAIL: grafana/alloy:latest does not publish linux/arm64\n' >&2
   exit 1
 fi

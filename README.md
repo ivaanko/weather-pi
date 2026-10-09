@@ -16,6 +16,8 @@ Add required files:
 
 Spin up: `./runme.sh`
 
+For local checks, install `pre-commit` and run `pre-commit install`. Run the complete check suite with `pre-commit run --all-files`; the same deterministic checks run on pushes and pull requests. Registry manifest checks run weekly and can also be triggered manually because Docker Hub may rate-limit anonymous requests.
+
 Check container platform support: `bash tests/check-alloy-platform.sh`. It verifies the ARMv7 build bases and upstream ARM64 image against registry manifests. It needs the Docker CLI, `jq`, and Docker Hub access; authenticate with `docker login` if anonymous rate limits are reached. The Docker daemon does not need to be running.
 
 On 32-bit ARMv7 Raspberry Pi OS, `./runme.sh` builds a local Alloy `v1.16.0` image from upstream source the first time it is needed. This source build is resource-intensive and may take a long time on a Pi 3B+; ensure Docker has several gigabytes of free storage and sufficient memory or swap. On ARM64 and other systems, the upstream `grafana/alloy:latest` image is used.

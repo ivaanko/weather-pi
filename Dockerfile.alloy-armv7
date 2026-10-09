@@ -4,6 +4,7 @@ ARG ALLOY_VERSION=v1.16.0
 
 FROM --platform=$BUILDPLATFORM node:22-bookworm AS source
 ARG ALLOY_VERSION
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates git \
     && rm -rf /var/lib/apt/lists/* \
@@ -18,6 +19,7 @@ ARG ALLOY_VERSION
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates git make \
     && rm -rf /var/lib/apt/lists/*
@@ -33,6 +35,7 @@ FROM debian:bookworm-slim
 ARG ALLOY_VERSION
 LABEL org.opencontainers.image.source="https://github.com/grafana/alloy" \
     org.opencontainers.image.version="$ALLOY_VERSION"
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libsystemd0 tzdata \
     && rm -rf /var/lib/apt/lists/*
