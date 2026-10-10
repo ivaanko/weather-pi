@@ -1,0 +1,103 @@
+prometheus.remote_write "grafana_cloud" {
+	external_labels = {
+		host = "pi",
+	}
+
+	endpoint {
+		url = sys.env("MIMIR_URL")
+
+		basic_auth {
+			username      = sys.env("MIMIR_USER")
+			password_file = "/grafana-cloud/key"
+		}
+	}
+}
+
+prometheus.scrape "alloy" {
+	job_name   = "alloy"
+	targets    = [{"__address__" = "localhost:12345"}]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.scrape "node" {
+	job_name   = "node"
+	targets    = [{"__address__" = "localhost:9100"}]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.scrape "docker" {
+	job_name   = "docker"
+	targets    = [{"__address__" = "localhost:9323"}]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.scrape "pushgateway" {
+	job_name   = "pushgateway"
+	targets    = [{"__address__" = "localhost:9091"}]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.scrape "dht22" {
+	job_name   = "dht22"
+	targets    = [{"__address__" = "localhost:8080"}]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+loki.write "grafana_cloud" {
+	endpoint {
+		url = sys.env("LOKI_URL")
+
+		basic_auth {
+			username      = sys.env("LOKI_USER")
+			password_file = "/grafana-cloud/key"
+		}
+	}
+}
+
+loki.source.file "system_logs" {
+	targets = [{
+		"__path__" = "/var/log/*log",
+		job        = "pi-varlogs",
+	}]
+	forward_to = [loki.write.grafana_cloud.receiver]
+
+	file_match {
+		enabled = true
+	}
+}
+
+loki.process "docker_logs" {
+	forward_to = [loki.write.grafana_cloud.receiver]
+
+	stage.json {
+		expressions = {attrs = ""}
+	}
+
+	stage.json {
+		expressions = {tag = ""}
+		source      = "attrs"
+	}
+
+	stage.regex {
+		expression = "(?P<container_name>(?:[^|]*[^|]))"
+		source     = "tag"
+	}
+
+	stage.docker { }
+
+	stage.labels {
+		values = {container_name = ""}
+	}
+}
+
+loki.source.file "container_logs" {
+	targets = [{
+		"__path__" = "/var/lib/docker/containers/*/*log",
+		job        = "pi-containerlogs",
+	}]
+	forward_to = [loki.process.docker_logs.receiver]
+
+	file_match {
+		enabled = true
+	}
+}

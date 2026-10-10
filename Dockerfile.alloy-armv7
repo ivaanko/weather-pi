@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1.7
+
+ARG ALLOY_VERSION=v1.16.0
+
+FROM --platform=$BUILDPLATFORM node:22-bookworm AS source
+ARG ALLOY_VERSION
+# hadolint ignore=DL3008
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git \
+    && rm -rf /var/lib/apt/lists/* \
+    && git clone --depth 1 --branch "$ALLOY_VERSION" https://github.com/grafana/alloy.git /src
+
+FROM source AS ui-build
+WORKDIR /src/internal/web/ui
+RUN npm ci --no-audit --no-fund && npm run build
+
+FROM --platform=$BUILDPLATFORM golang:1.26.2-bookworm AS build
+ARG ALLOY_VERSION
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+# hadolint ignore=DL3008
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git make \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=source /src /src
+COPY --from=ui-build /src/internal/web/ui/dist /src/internal/web/ui/dist
+WORKDIR /src
+RUN GOOS="$TARGETOS" GOARCH="$TARGETARCH" GOARM="${TARGETVARIANT#v}" \
+    RELEASE_BUILD=1 VERSION="${ALLOY_VERSION#v}" \
+    CGO_ENABLED=0 GO_TAGS="netgo embedalloyui" \
+    SKIP_UI_BUILD=1 make alloy
+
+FROM debian:bookworm-slim
+ARG ALLOY_VERSION
+LABEL org.opencontainers.image.source="https://github.com/grafana/alloy" \
+    org.opencontainers.image.version="$ALLOY_VERSION"
+# hadolint ignore=DL3008
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libsystemd0 tzdata \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /src/build/alloy /bin/alloy
+ENV ALLOY_DEPLOY_MODE=docker
+ENTRYPOINT ["/bin/alloy"]
+CMD ["run", "/etc/alloy/config.alloy", "--storage.path=/var/lib/alloy/data"]
