@@ -13,8 +13,6 @@ sed -ie "s/LOKI_USER/${LOKI_USER}/" promtail.yaml
 ## install crontab
 crontab crontab.txt
 
-export HOST_IP=`ip -4 addr show scope global dev docker0 | grep inet | awk '{print \$2}' | cut -d / -f 1`
-echo HOST_IP=$HOST_IP
 cmd='up -d'
 if [ "${1:-''}" != "''" ] ; then
   echo setting custom cmd
